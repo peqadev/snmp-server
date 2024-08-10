@@ -245,24 +245,30 @@ def _write_int(value, strip_leading_zeros=True):
         else:
             raise Exception('Min signed int value')
     else:
-        # Always pack as the largest size to simplify leading zero handling.
-        result = struct.pack('>Q', value)
-
-        # Check if the first relevant byte (ignoring leading zeros for now) would be misinterpreted as negative.
-        if not strip_leading_zeros or (result[0] == 0x00 and (result[1] & 0x80) != 0):
-            # If not stripping leading zeros, or if stripping them would cause a misinterpretation,
-            # leave the result as is. This branch might need revisiting based on specific needs.
-            pass
-        else:
-            # Here's the core of the adjustment: only strip leading zeros if it does not lead to misinterpretation.
-            # This means checking if the first byte would make it look negative and adjusting accordingly.
-            first_non_zero_byte = next((i for i, byte in enumerate(result) if byte != 0), len(result) - 1)
-            if result[first_non_zero_byte] & 0x80:
-                # If the first non-zero byte's MSB is set, prepend a 0x00 to keep it positive.
-                result = b'\x00' + result[first_non_zero_byte:]
+        if not strip_leading_zeros:
+            # Always pack as the largest size to simplify leading zero handling.
+            if value <= 0x7fffffff:
+                result = struct.pack('>I', value)
             else:
-                # Otherwise, strip all leading zeros except the last one, if all are zeros.
-                result = result[first_non_zero_byte:]
+                result = struct.pack('>Q', value)
+        else:
+            # Always pack as the largest size to simplify leading zero handling.
+            result = struct.pack('>Q', value)
+            # Check if the first relevant byte (ignoring leading zeros for now) would be misinterpreted as negative.
+            if (result[0] == 0x00 and (result[1] & 0x80) != 0):
+                # If not stripping leading zeros, or if stripping them would cause a misinterpretation,
+                # leave the result as is. This branch might need revisiting based on specific needs.
+                pass
+            else:
+                # Here's the core of the adjustment: only strip leading zeros if it does not lead to misinterpretation.
+                # This means checking if the first byte would make it look negative and adjusting accordingly.
+                first_non_zero_byte = next((i for i, byte in enumerate(result) if byte != 0), len(result) - 1)
+                if result[first_non_zero_byte] & 0x80:
+                    # If the first non-zero byte's MSB is set, prepend a 0x00 to keep it positive.
+                    result = b'\x00' + result[first_non_zero_byte:]
+                else:
+                    # Otherwise, strip all leading zeros except the last one, if all are zeros.
+                    result = result[first_non_zero_byte:]
 
     return result or b'\x00'
 
