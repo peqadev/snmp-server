@@ -31,7 +31,7 @@ It is also possible to use standalone version of SNMP server, which works as an 
 
 ::
 
-  Standalone usage: snmp-server.py [-h] [-p PORT] [-c CONFIG] [-d] [-v]
+  Standalone usage: snmp_server.py [-h] [-p PORT] [-c CONFIG] [-d] [-v]
 
   SNMP server
 
@@ -47,9 +47,9 @@ It is also possible to use standalone version of SNMP server, which works as an 
 
 ::
 
-  # ./snmp-server.py -p 12345
+  # ./snmp_server.py -p 12345
   SNMP server listening on 0.0.0.0:12345
-  # ./snmp-server.py
+  # ./snmp_server.py
   SNMP server listening on 0.0.0.0:161
 
 Without config file SNMP server works as a simple SNMP echo server:
