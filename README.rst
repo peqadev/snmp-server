@@ -5,7 +5,7 @@ SNMP server
 
 Description:
 ------------
-Simple SNMP server in pure Python  
+Simple SNMP server in pure Python
 
 Usage with pytest:
 ------------------
@@ -59,11 +59,11 @@ Without config file SNMP server works as a simple SNMP echo server:
   # snmpget -v 2c -c public 0.0.0.0:161 1.2.3.4.5.6.7.8.9.10.11
   iso.2.3.4.5.6.7.8.9.10.11 = STRING: "1.2.3.4.5.6.7.8.9.10.11"
 
-It is possible to create a config file with values for specific OIDs.  
+It is possible to create a config file with values for specific OIDs.
 
-Config file - is a Python script and must have DATA dictionary with string OID keys and values.  
+Config file - is a Python script and must have DATA dictionary with string OID keys and values.
 
-Values can be either ASN.1 types (e.g. :code:`integer(...)`, :code:`octet_string(...)`, etc) or any Python lambda/functions (with single argument - OID string), returning ASN.1 type.  
+Values can be either ASN.1 types (e.g. :code:`integer(...)`, :code:`octet_string(...)`, etc) or any Python lambda/functions (with single argument - OID string), returning ASN.1 type.
 
 ::
 
@@ -108,8 +108,81 @@ Also :code:`snmpset` command can be used:
   # snmpset -v2c -c public 0.0.0.0:161 .1.3.6.1.4.1.1.3.0 s "new value"
   iso.3.6.1.4.1.1.3.0 = STRING: "new value"
   #
-  # snmpget -v2c -c public 0.0.0.0:161 .1.3.6.1.4.1.1.3.0 
+  # snmpget -v2c -c public 0.0.0.0:161 .1.3.6.1.4.1.1.3.0
   iso.3.6.1.4.1.1.3.0 = STRING: "new value"
+
+Web Interface
+------------
+
+The SNMP server now includes a web interface for easy configuration management. The web interface allows you to view and modify the SNMP server configuration through a browser.
+
+Running the Web Interface
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+To start the web interface:
+
+.. code-block:: bash
+
+    python web-interface.py
+
+By default, the web interface runs on port 9999. Access it at http://localhost:9999
+
+Configuration Format
+~~~~~~~~~~~~~~~~~~
+
+The web interface expects configurations in Python format with a ``DATA`` dictionary containing OID mappings. Example:
+
+.. code-block:: python
+
+    # SNMP Server Configuration
+    DATA = {
+        # Simple string OID - System Description
+        '1.3.6.1.2.1.1.1.0': 'Example SNMP Server',  # Will be converted to OCTET_STRING
+
+        # System uptime
+        '1.3.6.1.2.1.1.3.0': 123456,  # Will be converted to TIMETICKS
+
+        # Simple integer value
+        '1.3.6.1.2.1.1.4.0': 42,  # Will be converted to INTEGER
+
+        # Basic counter
+        '1.3.6.1.2.1.2.1.0': 1000,  # Will be converted to COUNTER32
+
+        # IP address as string
+        '1.3.6.1.2.1.3.1.0': '192.168.1.1',  # Will be converted to IPADDRESS
+
+        # Function that returns dynamic value
+        '1.3.6.1.2.1.4.1.0': lambda oid: len(oid)
+    }
+
+Features
+~~~~~~~~
+
+- Live configuration editing through web browser
+- Automatic validation of configuration syntax
+- Configuration backup creation before updates
+- Automatic type conversion for SNMP values
+- Real-time updates (no server restart required)
+
+Value Types
+~~~~~~~~~~
+
+The configuration supports these basic Python types that are automatically converted to SNMP types:
+
+- Strings → OCTET_STRING
+- Integers → INTEGER
+- IP address strings → IPADDRESS
+- Functions → Dynamic values (must take one OID argument)
+
+Security Note
+~~~~~~~~~~~~
+
+The web interface is intended for local development and testing. For production use, consider:
+
+- Running behind a reverse proxy
+- Adding authentication
+- Restricting access to trusted networks
+- Using HTTPS
 
 License:
 --------
